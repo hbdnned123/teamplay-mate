@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>팀플 메이트 - 공정한 역할분담 & 재조율</title>
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --primary-dark: #1d4ed8;
+      --primary-light: #eff6ff;
+      --secondary: #64748b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding-bottom: 70px;
+    }
+
+    #app-container {
+      width: 100%;
+      max-width: 440px;
+      padding: 16px;
+      margin: 0 auto;
+    }
+
+    /* 상단 고정 테스트 바 */
+    #test-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 58px;
+      background: #1e293b;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      z-index: 1000;
+      font-size: 13px;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
+    }
+    #test-bar .date-info {
+      display: flex;
+      flex-direction: column;
+    }
+    #test-bar .date-label {
+      font-size: 10px;
+      color: #94a3b8;
+    }
+    #test-bar .date-val {
+      font-weight: 700;
+      color: #38bdf8;
+    }
+    #test-bar .btn-group {
+      display: flex;
+      gap: 6px;
+    }
+    .test-btn {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-next-day {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+    .btn-reset {
+      background: #f43f5e;
+      color: white;
+    }
+
+    /* 공통 컴포넌트 */
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-top: 8px;
+    }
+    header h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      letter-spacing: -0.5px;
+    }
+    header p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #0f172a;
+    }
+    .card-title .badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+    input[type="text"], input[type="date"], select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fff;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+    .btn:active {
+      transform: scale(0.98);
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #334155;
+    }
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+    .btn-warning {
+      background: var(--warning);
+      color: white;
+    }
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+    .btn-sm {
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 6px;
+      width: auto;
+    }
+    .btn:disabled {
+      background: #cbd5e1 !important;
+      color: #94a3b8 !important;
+      cursor: not-allowed;
+    }
+
+    /* 별 가중치 가이드 박스 */
+    .weight-guide {
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .weight-guide strong {
+      color: #1e293b;
+    }
+
+    /* 세분화 샘플 업무 태그 리스트 */
+    .sample-section {
+      margin-bottom: 14px;
+    }
+    .sample-cat-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      margin: 8px 0 4px 0;
+    }
+    .sample-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .sample-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      font-size: 13px;
+    }
+    .sample-item.selected {
+      background: var(--primary-light);
+      border-color: #bfdbfe;
+    }
+    .sample-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+    .stars {
+      color: #f59e0b;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* 묶음 액션 바 */
+    .bundle-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fef3c7;
+      border: 1px solid #fde68a;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: #92400e;
+    }
+
+    /* 팀원 입력 태그 리스트 */
+    .member-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    /* 대시보드 모니터링 */
+    .dday-box {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .dday-title {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+    .dday-val {
+      font-size: 32px;
+      font-weight: 900;
+      margin: 4px 0;
+    }
+    .progress-wrap {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      height: 12px;
+      overflow: hidden;
+      margin: 10px 0 6px 0;
+    }
+    .progress-bar {
+      height: 100%;
+      background: #10b981;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .progress-text {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* 팀원별 카드 */
+    .member-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 12px;
+      background: white;
+    }
+    .member-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .member-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1e293b;
+    }
+    .member-stats {
+      font-size: 12px;
+      color: #64748b;
+    }
+    .member-stats strong {
+      color: var(--primary);
+    }
+
+    /* 태스크 아이템 */
+    .task-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .task-card.completed {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+      opacity: 0.85;
+    }
+    .task-card.completed .task-title {
+      text-decoration: line-through;
+      color: #64748b;
+    }
+    .task-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .task-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      flex: 1;
+    }
+    .bundle-badge {
+      display: inline-block;
+      font-size: 10px;
+      background: #fef3c7;
+      color: #b45309;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    .task-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    /* 동의 상태 뱃지 */
+    .consent-badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+    .consent-done {
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .consent-waiting {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    /* 축하 배너 */
+    .congrats-banner {
+      background: #dcfce7;
+      border: 2px solid #86efac;
+      color: #166534;
+      padding: 14px;
+      border-radius: var(--radius);
+      text-align: center;
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      animation: pop 0.3s ease;
+    }
+    @keyframes pop {
+      0% { transform: scale(0.95); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* 모달 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 16px;
+    }
+    .modal-content {
+      background: white;
+      border-radius: var(--radius);
+      padding: 18px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+    .modal-title {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: #0f172a;
+    }
+
+    .alert-msg {
+      background: #fee2e2;
+      border-left: 4px solid var(--danger);
+      color: #991b1b;
+      padding: 8px 12px;
+      font-size: 12px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    /* 화면 전환 제어 */
+    .view-section {
+      display: none;
+    }
+    .view-section.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app-container">
+    <header>
+      <h1>👥 팀플 메이트</h1>
+      <p>공정한 가중치 분담 & 유연한 재조율</p>
+    </header>
+
+    <!-- 1단계 화면: 입력값 설정 -->
+    <section id="view-input" class="view-section active">
+      <div class="card">
+        <div class="card-title">
+          <span>1. 팀플 기본 정보</span>
+          <span class="badge">필수</span>
+        </div>
+        <div class="form-group">
+          <label for="input-team-name">팀 프로젝트 이름</label>
+          <input type="text" id="input-team-name" placeholder="예: 경영학원론 3조 발표">
+        </div>
+        <div class="form-group">
+          <label for="input-deadline">마감일 (D-day 기준일)</label>
+          <input type="date" id="input-deadline">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>2. 팀원 등록 (2명 이상)</span>
+          <span class="badge" id="member-count-badge">0명</span>
+        </div>
+        <div id="member-list-wrap"></div>
+        <div style="display: flex; gap: 6px; margin-top: 8px;">
+          <input type="text" id="new-member-name" placeholder="팀원 이름" style="flex: 1;">
+          <select id="new-member-role" style="width: 110px;">
+            <option value="자료조사">자료조사</option>
+            <option value="PPT">PPT제작</option>
+            <option value="발표">발표</option>
+            <option value="보고서">보고서</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" id="btn-add-member" style="white-space: nowrap;">+ 추가</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>3. 할 일 목록 구성</span>
+          <span class="badge" id="task-count-badge">0개 선택</span>
+        </div>
+
+        <div class="weight-guide">
+          <strong>💡 가중치(★) 가이드 기준</strong><br>
+          ★1: 가벼운 취합/수정 (약 30분)<br>
+          ★2: 정해진 양식 작성/목차 (약 1~2시간)<br>
+          ★3: 일반 슬라이드 제작/대본 (약 3~4시간)<br>
+          ★4: 심화 분석/디자인/발표 (약 5시간 이상)<br>
+          ★5: 프로젝트 핵심 총괄/고난도 작업
+        </div>
+
+        <!-- 묶음 액션 바 -->
+        <div class="bundle-bar" id="bundle-bar" style="display: none;">
+          <span id="bundle-selected-count">2개 선택됨</span>
+          <button class="btn btn-warning btn-sm" id="btn-bundle-selected">선택한 업무 묶기 🔗</button>
+        </div>
+
+        <div class="sample-section">
+          <label style="margin-bottom: 8px;">세분화된 추천 샘플 목록 (체크 선택)</label>
+          <div id="sample-task-container"></div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px dashed var(--border); margin: 16px 0;">
+
+        <div>
+          <label>할 일 직접 추가</label>
+          <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+            <input type="text" id="custom-task-name" placeholder="할 일 이름 (예: 설문 결과 분석)" style="flex: 1;">
+            <select id="custom-task-stars" style="width: 90px;">
+              <option value="1">★ 1</option>
+              <option value="2">★ 2</option>
+              <option value="3" selected>★ 3</option>
+              <option value="4">★ 4</option>
+              <option value="5">★ 5</option>
+            </select>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <select id="custom-task-role" style="flex: 1;">
+              <option value="자료조사">카테고리: 자료조사</option>
+              <option value="PPT">카테고리: PPT</option>
+              <option value="발표">카테고리: 발표</option>
+              <option value="보고서">카테고리: 보고서</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" id="btn-add-custom-task" style="white-space: nowrap;">+ 할 일 추가</button>
+          </div>
+        </div>
+
+        <!-- 선택 및 추가된 업무 최종 리스트 -->
+        <div style="margin-top: 14px;">
+          <label>선택된 전체 할 일 목록 (<span id="total-stars-sum">총 가중치 ★0</span>)</label>
+          <div id="selected-tasks-summary" style="display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto;">
+            <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 12px;">선택되거나 추가된 할 일이 없습니다.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="input-error-msg" class="alert-msg" style="display: none;"></div>
+
+      <button class="btn btn-primary" id="btn-generate-draft" style="font-size: 15px; padding: 14px;">
+        ⚖️ 역할 분담 초안 생성하기
+      </button>
+    </section>
+
+    <!-- 2단계 화면: 초안 생성 및 팀원 동의 -->
+    <section id="view-draft" class="view-section">
+      <div class="card">
+        <div class="card-title">
+          <span>초안 역할 배분 결과</span>
+          <span class="badge" id="draft-consent-status">동의 대기</span>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+          선호 역할을 우선 반영하고 팀원 간 총 가중치 합이 균등하도록 배분되었습니다. 모든 팀원의 동의 버튼을 눌러주세요.
+        </p>
+        <div id="draft-cards-container"></div>
+      </div>
+
+      <div id="draft-error-msg" class="alert-msg" style="display: none;"></div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary" id="btn-back-to-input" style="flex: 1;">이전으로</button>
+        <button class="btn btn-success" id="btn-start-project" style="flex: 2;" disabled>
+          🚀 프로젝트 시작 (0/0 동의)
+        </button>
+      </div>
+    </section>
+
+    <!-- 3~5단계 화면: 모니터링 & 실행 대시보드 및 재조율 -->
+    <section id="view-dashboard" class="view-section">
+      <!-- D-day 및 전체 완성도 게이지 바 -->
+      <div class="dday-box">
+        <div class="dday-title" id="dash-team-title">팀 프로젝트 현황</div>
+        <div class="dday-val" id="dash-dday-val">D-7</div>
+        <div class="progress-wrap">
+          <div class="progress-bar" id="dash-progress-bar"></div>
+        </div>
+        <div class="progress-text" id="dash-progress-text">완성도 0% (완료 ★0 / 전체 ★0)</div>
+      </div>
+
+      <!-- 100% 완료 배너 -->
+      <div id="congrats-banner" class="congrats-banner" style="display: none;">
+        🎉 모든 업무가 완료되었습니다! 팀원 모두 수고하셨습니다!
+      </div>
+
+      <!-- 재조율 액션 패널 -->
+      <div class="card" style="background: #fffbeb; border-color: #fef3c7;">
+        <div class="card-title" style="margin-bottom: 8px;">
+          <span>⚡ 재조율 컨트롤 (인원/업무 변경)</span>
+        </div>
+        <p style="font-size: 12px; color: #92400e; margin-bottom: 10px;">
+          인원이 바뀌거나 업무량이 변했을 때 버튼 하나로 남은 일을 공정하게 재분배합니다.
+        </p>
+        <div style="display: flex; gap: 6px;">
+          <button class="btn btn-warning btn-sm" id="btn-open-member-manage" style="flex: 1;">팀원 추가 / 이탈</button>
+          <button class="btn btn-primary btn-sm" id="btn-rebalance-all" style="flex: 1.4;">⚖️ 미완료 1/N 공정 재분배</button>
+        </div>
+      </div>
+
+      <!-- 팀원별 업무 실행 카드 목록 -->
+      <div id="dashboard-members-container"></div>
+    </section>
+  </div>
+
+  <!-- 상시 고정 테스트 바 -->
+  <div id="test-bar">
+    <div class="date-info">
+      <span class="date-label">가상 오늘 날짜</span>
+      <span class="date-val" id="test-current-date">2026.11.17</span>
+    </div>
+    <div class="btn-group">
+      <button class="test-btn btn-next-day" id="btn-test-next-day">+1일 이동</button>
+      <button class="test-btn btn-reset" id="btn-test-reset">처음부터 다시</button>
+    </div>
+  </div>
+
+  <!-- 모달: 가중치 수정 요청 -->
+  <div class="modal-overlay" id="modal-weight-edit" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-title">⚖️ 업무 가중치 수정 요청</div>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;" id="modal-task-title-info"></p>
+      
+      <div class="form-group">
+        <label>새로운 가중치 (별 1~5개)</label>
+        <select id="modal-new-stars">
+          <option value="1">★ 1 (가벼운 작업, 약 30분)</option>
+          <option value="2">★ 2 (정형화된 작업, 1~2시간)</option>
+          <option value="3">★ 3 (일반 슬라이드/문서, 3~4시간)</option>
+          <option value="4">★ 4 (심화 분석/디자인, 5시간 이상)</option>
+          <option value="5">★ 5 (고난도 핵심 총괄)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>가중치 변경 사유 (이유 필수 작성)</label>
+        <textarea id="modal-edit-reason" rows="3" placeholder="예: 예상보다 추가 논문 분석과 번역이 많이 필요하여 시간이 2배 이상 걸립니다."></textarea>
+      </div>
+
+      <div style="background: #f1f5f9; padding: 10px; border-radius: 8px; margin-bottom: 12px;">
+        <label style="font-size: 12px; margin-bottom: 6px;">팀원 동의 현황 (전원 동의 시 재배분)</label>
+        <div id="modal-consent-checkboxes"></div>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary btn-sm" id="btn-close-weight-modal" style="flex: 1;">취소</button>
+        <button class="btn btn-primary btn-sm" id="btn-confirm-weight-edit" style="flex: 1.5;">동의 완료 & 재분배</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모달: 팀원 추가 / 하차 관리 -->
+  <div class="modal-overlay" id="modal-member-manage" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-title">👥 팀원 추가 및 하차 관리</div>
+      <div id="manage-member-list" style="margin-bottom: 14px; max-height: 180px; overflow-y: auto;"></div>
+      
+      <div style="border-top: 1px solid var(--border); padding-top: 10px; margin-bottom: 12px;">
+        <label style="font-size: 12px;">신규 팀원 합류</label>
+        <div style="display: flex; gap: 6px;">
+          <input type="text" id="add-mid-member-name" placeholder="이름" style="flex: 1;">
+          <select id="add-mid-member-role" style="width: 100px;">
+            <option value="자료조사">자료조사</option>
+            <option value="PPT">PPT</option>
+            <option value="발표">발표</option>
+            <option value="보고서">보고서</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" id="btn-confirm-mid-add">+ 추가</button>
+        </div>
+      </div>
+
+      <button class="btn btn-secondary btn-sm" id="btn-close-member-manage" style="width: 100%;">닫기</button>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================
+       1. 앱 상태 데이터 및 localStorage 키 관리
+       ========================================================= */
+    const STORAGE_KEY = 'teamplay_mate_v1_state';
+
+    // 세분화된 샘플 할 일 목록
+    const SAMPLE_TASKS = [
+      { id: 's1', role: '자료조사', name: '기초 주제 탐색 및 개요 정리', stars: 2 },
+      { id: 's2', role: '자료조사', name: '논문 및 통계 심화 자료 검증', stars: 4 },
+      { id: 's3', role: '자료조사', name: '사례 조사 및 설문 데이터 수합', stars: 3 },
+      { id: 's4', role: 'PPT', name: '발표자료 목차 및 흐름도 기획', stars: 2 },
+      { id: 's5', role: 'PPT', name: 'PPT 슬라이드 본문 초안 제작', stars: 3 },
+      { id: 's6', role: 'PPT', name: 'PPT 디자인, 인포그래픽 시각화', stars: 4 },
+      { id: 's7', role: 'PPT', name: '최종 슬라이드 오탈자 검토 및 수정', stars: 2 },
+      { id: 's8', role: '발표', name: '발표 스크립트 대본 작성', stars: 3 },
+      { id: 's9', role: '발표', name: '질의응답(Q&A) 예상 질문 작성', stars: 3 },
+      { id: 's10', role: '발표', name: '리허설 타이밍 체크 및 발표 진행', stars: 4 },
+      { id: 's11', role: '보고서', name: '보고서 서론/본론/결론 초안 작성', stars: 3 },
+      { id: 's12', role: '보고서', name: '최종 보고서 맞춤법 교정 및 제출', stars: 2 }
+    ];
+
+    // 기본 상태
+    let state = {
+      virtualToday: '2026-11-17',
+      stage: 'input', // 'input', 'draft', 'dashboard'
+      teamName: '',
+      deadline: '2026-11-24',
+      members: [
+        { id: 'm1', name: '김철수', role: '자료조사', active: true },
+        { id: 'm2', name: '이영희', role: 'PPT', active: true },
+        { id: 'm3', name: '박민수', role: '발표', active: true }
+      ],
+      selectedTasks: [], // [{ id, sampleId, name, stars, role, bundleId, completed, assignedTo }]
+      bundles: [],
+      bundleCheckQueue: [],
+      draftConsents: {},
+      editingTaskId: null
+    };
+
+    /* =========================================================
+       2. 초기화 및 저장 로드
+       ========================================================= */
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          state = Object.assign(state, parsed);
+        }
+      } catch (e) {
+        console.error('Failed to load state', e);
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.error('Failed to save state', e);
+      }
+    }
+
+    /* =========================================================
+       3. 렌더링 라우터
+       ========================================================= */
+    function render() {
+      // 가상 날짜 표시 갱신
+      const dateElem = document.getElementById('test-current-date');
+      if (dateElem) {
+        dateElem.innerText = state.virtualToday.replace(/-/g, '.');
+      }
+
+      // 화면 전환
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      const activeSection = document.getElementById(`view-${state.stage}`);
+      if (activeSection) {
+        activeSection.classList.add('active');
+      }
+
+      if (state.stage === 'input') {
+        renderInputView();
+      } else if (state.stage === 'draft') {
+        renderDraftView();
+      } else if (state.stage === 'dashboard') {
+        renderDashboardView();
+      }
+    }
+
+    /* =========================================================
+       4. 1단계: 입력 화면 로직 (버그 수정: 입력값 보존)
+       ========================================================= */
+    function renderInputView() {
+      const nameInput = document.getElementById('input-team-name');
+      const deadlineInput = document.getElementById('input-deadline');
+
+      // 입력 중인 포커스가 없을 때만 상태값 반영하여 타이핑 방해 방지
+      if (document.activeElement !== nameInput) {
+        nameInput.value = state.teamName || '';
+      }
+      if (document.activeElement !== deadlineInput) {
+        deadlineInput.value = state.deadline || '2026-11-24';
+      }
+
+      // 팀원 목록 렌더링
+      const memberListWrap = document.getElementById('member-list-wrap');
+      memberListWrap.innerHTML = '';
+      state.members.forEach((m) => {
+        const div = document.createElement('div');
+        div.className = 'member-item';
+        div.innerHTML = `
+          <span style="font-size: 13px; font-weight: 700; width: 70px;">${m.name}</span>
+          <span class="badge" style="background:#f1f5f9; color:#475569; font-size:11px;">${m.role}</span>
+          <button class="btn btn-secondary btn-sm" style="padding: 2px 8px; margin-left: auto; color:#ef4444;" onclick="removeMember('${m.id}')">삭제</button>
+        `;
+        memberListWrap.appendChild(div);
+      });
+      document.getElementById('member-count-badge').innerText = `${state.members.length}명`;
+
+      // 샘플 태스크 렌더링
+      const sampleContainer = document.getElementById('sample-task-container');
+      sampleContainer.innerHTML = '';
+      
+      const roles = ['자료조사', 'PPT', '발표', '보고서'];
+      roles.forEach(cat => {
+        const catTitle = document.createElement('div');
+        catTitle.className = 'sample-cat-title';
+        catTitle.innerText = `[${cat} 파트]`;
+        sampleContainer.appendChild(catTitle);
+
+        const grid = document.createElement('div');
+        grid.className = 'sample-grid';
+
+        const catTasks = SAMPLE_TASKS.filter(t => t.role === cat);
+        catTasks.forEach(st => {
+          const isSelected = state.selectedTasks.some(t => t.sampleId === st.id);
+          const item = document.createElement('div');
+          item.className = `sample-item ${isSelected ? 'selected' : ''}`;
+          item.innerHTML = `
+            <div class="sample-left">
+              <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSampleTask('${st.id}')">
+              <span>${st.name}</span>
+            </div>
+            <span class="stars">${'★'.repeat(st.stars)}</span>
+          `;
+          grid.appendChild(item);
+        });
+        sampleContainer.appendChild(grid);
+      });
+
+      // 선택된 업무 요약 및 묶음 체크박스 렌더링
+      renderSelectedTasksSummary();
+    }
+
+    function renderSelectedTasksSummary() {
+      const summaryContainer = document.getElementById('selected-tasks-summary');
+      const badge = document.getElementById('task-count-badge');
+      const totalStars = document.getElementById('total-stars-sum');
+      
+      badge.innerText = `${state.selectedTasks.length}개 선택`;
+
+      let starsSum = 0;
+      state.selectedTasks.forEach(t => starsSum += t.stars);
+      totalStars.innerText = `총 가중치 ★${starsSum}`;
+
+      if (state.selectedTasks.length === 0) {
+        summaryContainer.innerHTML = '<div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 12px;">선택되거나 추가된 할 일이 없습니다.</div>';
+        document.getElementById('bundle-bar').style.display = 'none';
+        return;
+      }
+
+      summaryContainer.innerHTML = '';
+      state.selectedTasks.forEach((t) => {
+        const isQueued = state.bundleCheckQueue.includes(t.id);
+        const div = document.createElement('div');
+        div.className = 'task-card';
+        div.style.marginBottom = '4px';
+        div.innerHTML = `
+          <div class="task-top">
+            <div class="task-title-wrap">
+              <input type="checkbox" title="묶기 선택" ${isQueued ? 'checked' : ''} onchange="toggleBundleQueue('${t.id}')">
+              <span>${t.name}</span>
+              ${t.bundleId ? `<span class="bundle-badge">🔗 묶음 업무</span>` : ''}
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="stars">${'★'.repeat(t.stars)}</span>
+              <button class="btn btn-secondary btn-sm" style="padding: 2px 6px; font-size: 10px; color:#ef4444;" onclick="deleteSelectedTask('${t.id}')">×</button>
+            </div>
+          </div>
+        `;
+        summaryContainer.appendChild(div);
+      });
+
+      // 묶음 액션 바 제어
+      const bundleBar = document.getElementById('bundle-bar');
+      if (state.bundleCheckQueue.length >= 2) {
+        bundleBar.style.display = 'flex';
+        document.getElementById('bundle-selected-count').innerText = `${state.bundleCheckQueue.length}개 선택됨`;
+      } else {
+        bundleBar.style.display = 'none';
+      }
+    }
+
+    function toggleBundleQueue(taskId) {
+      const idx = state.bundleCheckQueue.indexOf(taskId);
+      if (idx > -1) {
+        state.bundleCheckQueue.splice(idx, 1);
+      } else {
+        state.bundleCheckQueue.push(taskId);
+      }
+      renderSelectedTasksSummary();
+    }
+
+    function bundleSelectedTasks() {
+      if (state.bundleCheckQueue.length < 2) return;
+      const newBundleId = 'bundle_' + Date.now();
+      state.selectedTasks.forEach(t => {
+        if (state.bundleCheckQueue.includes(t.id)) {
+          t.bundleId = newBundleId;
+        }
+      });
+      state.bundleCheckQueue = [];
+      saveState();
+      render();
+      alert('선택한 업무들이 1인 일괄 배정 묶음으로 연결되었습니다!');
+    }
+
+    function toggleSampleTask(sampleId) {
+      const existingIdx = state.selectedTasks.findIndex(t => t.sampleId === sampleId);
+      if (existingIdx > -1) {
+        const removed = state.selectedTasks.splice(existingIdx, 1)[0];
+        state.bundleCheckQueue = state.bundleCheckQueue.filter(id => id !== removed.id);
+      } else {
+        const sample = SAMPLE_TASKS.find(s => s.id === sampleId);
+        if (sample) {
+          state.selectedTasks.push({
+            id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            sampleId: sample.id,
+            name: sample.name,
+            stars: sample.stars,
+            role: sample.role,
+            bundleId: null,
+            completed: false,
+            assignedTo: null
+          });
+        }
+      }
+      saveState();
+      render();
+    }
+
+    function addCustomTask() {
+      const nameInput = document.getElementById('custom-task-name');
+      const starsInput = document.getElementById('custom-task-stars');
+      const roleInput = document.getElementById('custom-task-role');
+      const name = nameInput.value.trim();
+
+      if (!name) {
+        alert('할 일 이름을 입력해주세요.');
+        nameInput.focus();
+        return;
+      }
+
+      state.selectedTasks.push({
+        id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        sampleId: null,
+        name: name,
+        stars: parseInt(starsInput.value, 10),
+        role: roleInput.value,
+        bundleId: null,
+        completed: false,
+        assignedTo: null
+      });
+
+      nameInput.value = '';
+      saveState();
+      render();
+    }
+
+    function deleteSelectedTask(taskId) {
+      state.selectedTasks = state.selectedTasks.filter(t => t.id !== taskId);
+      state.bundleCheckQueue = state.bundleCheckQueue.filter(id => id !== taskId);
+      saveState();
+      render();
+    }
+
+    function addMember() {
+      const nameInput = document.getElementById('new-member-name');
+      const roleInput = document.getElementById('new-member-role');
+      const name = nameInput.value.trim();
+      if (!name) {
+        alert('팀원 이름을 입력해주세요.');
+        nameInput.focus();
+        return;
+      }
+      state.members.push({
+        id: 'm_' + Date.now(),
+        name: name,
+        role: roleInput.value,
+        active: true
+      });
+      nameInput.value = '';
+      saveState();
+      render();
+    }
+
+    function removeMember(memberId) {
+      if (state.members.length <= 2) {
+        alert('팀원은 최소 2명 이상이어야 합니다.');
+        return;
+      }
+      state.members = state.members.filter(m => m.id !== memberId);
+      saveState();
+      render();
+    }
+
+    /* =========================================================
+       5. 2단계: 초안 생성 알고리즘 (선호반영 + 1/N 공정 분배 고도화)
+       ========================================================= */
+    function generateDraft() {
+      const errorDiv = document.getElementById('input-error-msg');
+      state.teamName = document.getElementById('input-team-name').value.trim() || '팀 프로젝트';
+      state.deadline = document.getElementById('input-deadline').value || '2026-11-24';
+
+      // 판단 규칙: 팀원 2명 이상, 할 일 1개 이상
+      if (state.members.length < 2 || state.selectedTasks.length < 1) {
+        errorDiv.style.display = 'block';
+        errorDiv.innerText = '팀원 2명 이상, 할 일 1개 이상을 입력해주세요.';
+        return;
+      }
+      errorDiv.style.display = 'none';
+
+      distributeTasks(false);
+
+      // 동의 상태 초기화
+      state.draftConsents = {};
+      state.members.forEach(m => {
+        state.draftConsents[m.id] = false;
+      });
+
+      state.stage = 'draft';
+      saveState();
+      render();
+    }
+
+    // 공정 분배 알고리즘: 묶음 처리 + 선호 매칭 + 편차 최소화 Greedy LPT
+    function distributeTasks(onlyUncompleted = false) {
+      const activeMembers = state.members.filter(m => m.active);
+      if (activeMembers.length === 0) return;
+
+      const memberStars = {};
+      activeMembers.forEach(m => memberStars[m.id] = 0);
+
+      // 대상 태스크 추출
+      let tasksToAssign = state.selectedTasks;
+      if (onlyUncompleted) {
+        // 이미 완료된 업무의 가중치를 기존 담당자에게 유지
+        state.selectedTasks.forEach(t => {
+          if (t.completed && t.assignedTo && memberStars[t.assignedTo] !== undefined) {
+            memberStars[t.assignedTo] += t.stars;
+          }
+        });
+        tasksToAssign = state.selectedTasks.filter(t => !t.completed);
+      }
+
+      // 1. 묶음 업무를 그룹화
+      const bundleGroups = {};
+      const normalTasks = [];
+
+      tasksToAssign.forEach(t => {
+        if (t.bundleId) {
+          if (!bundleGroups[t.bundleId]) {
+            bundleGroups[t.bundleId] = [];
+          }
+          bundleGroups[t.bundleId].push(t);
+        } else {
+          normalTasks.push(t);
+        }
+      });
+
+      // 작업 단위 유닛 생성
+      const workUnits = [];
+      Object.keys(bundleGroups).forEach(bId => {
+        const tasks = bundleGroups[bId];
+        const starsSum = tasks.reduce((sum, item) => sum + item.stars, 0);
+        workUnits.push({
+          isBundle: true,
+          tasks: tasks,
+          role: tasks[0].role,
+          stars: starsSum
+        });
+      });
+
+      normalTasks.forEach(t => {
+        workUnits.push({
+          isBundle: false,
+          tasks: [t],
+          role: t.role,
+          stars: t.stars
+        });
+      });
+
+      // 가중치 높은 순 정렬 (LPT Greedy)
+      workUnits.sort((a, b) => b.stars - a.stars);
+
+      // 전체 남은 가중치 기준 멤버당 목표 가중치
+      const totalStarsSum = workUnits.reduce((acc, u) => acc + u.stars, 0) +
+        Object.values(memberStars).reduce((acc, v) => acc + v, 0);
+      const targetStarsPerMember = totalStarsSum / activeMembers.length;
+
+      // 2. 균등 분배 + 선호 반영
+      workUnits.forEach(unit => {
+        // 선호 매칭되는 멤버
+        const matchingMembers = activeMembers.filter(m => m.role === unit.role);
+
+        // 전체 멤버 중 현재 가중치 최솟값
+        let globalMinStars = Math.min(...activeMembers.map(m => memberStars[m.id]));
+
+        // 선호 멤버 중 현재 가중치가 목표를 초과하지 않거나 전체 최솟값과 큰 차이가 없는 멤버 우선 선별
+        let candidateMembers = matchingMembers.filter(m => {
+          return (memberStars[m.id] <= globalMinStars + 2) || (memberStars[m.id] < targetStarsPerMember);
+        });
+
+        // 적합한 선호 멤버가 없으면 전체 활성 멤버를 후보로
+        if (candidateMembers.length === 0) {
+          candidateMembers = activeMembers;
+        }
+
+        // 후보 중 가중치가 가장 낮은 멤버 탐색 (동점 시 랜덤)
+        let minStars = Infinity;
+        let bestCandidates = [];
+
+        candidateMembers.forEach(m => {
+          const currentStars = memberStars[m.id];
+          if (currentStars < minStars) {
+            minStars = currentStars;
+            bestCandidates = [m];
+          } else if (currentStars === minStars) {
+            bestCandidates.push(m);
+          }
+        });
+
+        const chosenMember = bestCandidates[Math.floor(Math.random() * bestCandidates.length)];
+
+        // 태스크에 배정 적용
+        unit.tasks.forEach(t => {
+          t.assignedTo = chosenMember.id;
+        });
+        memberStars[chosenMember.id] += unit.stars;
+      });
+    }
+
+    function renderDraftView() {
+      const container = document.getElementById('draft-cards-container');
+      container.innerHTML = '';
+
+      let allConsented = true;
+      let consentCount = 0;
+
+      state.members.filter(m => m.active).forEach(m => {
+        const isConsented = !!state.draftConsents[m.id];
+        if (isConsented) consentCount++;
+        else allConsented = false;
+
+        const assigned = state.selectedTasks.filter(t => t.assignedTo === m.id);
+        const totalStars = assigned.reduce((sum, t) => sum + t.stars, 0);
+
+        const card = document.createElement('div');
+        card.className = 'member-card';
+        card.innerHTML = `
+          <div class="member-card-header">
+            <div>
+              <span class="member-name">${m.name}</span>
+              <span class="badge" style="background:#f1f5f9; color:#475569; font-size:10px; margin-left:4px;">${m.role}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="member-stats">총 <strong>★${totalStars}</strong></span>
+              <button class="btn btn-sm ${isConsented ? 'btn-success' : 'btn-secondary'}" onclick="toggleDraftConsent('${m.id}')">
+                ${isConsented ? '동의 완료 ✓' : '동의하기'}
+              </button>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            ${assigned.length === 0 ? '<div style="font-size:12px; color:#94a3b8; text-align:center; padding:6px;">배정된 업무 없음</div>' : ''}
+            ${assigned.map(t => `
+              <div class="task-card" style="margin:0; padding:8px 10px;">
+                <div class="task-top">
+                  <div class="task-title-wrap">
+                    <span>${t.name}</span>
+                    ${t.bundleId ? `<span class="bundle-badge">묶음</span>` : ''}
+                  </div>
+                  <span class="stars">${'★'.repeat(t.stars)}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      const totalMembers = state.members.filter(m => m.active).length;
+      const startBtn = document.getElementById('btn-start-project');
+      const statusBadge = document.getElementById('draft-consent-status');
+      const errorMsg = document.getElementById('draft-error-msg');
+
+      startBtn.innerText = `🚀 프로젝트 시작 (${consentCount}/${totalMembers} 동의)`;
+      
+      // 판단 규칙: 미동의 팀원 존재 시 비활성화
+      if (allConsented && totalMembers > 0) {
+        startBtn.disabled = false;
+        statusBadge.className = 'badge consent-done';
+        statusBadge.innerText = '전원 동의 완료';
+        errorMsg.style.display = 'none';
+      } else {
+        startBtn.disabled = true;
+        statusBadge.className = 'badge consent-waiting';
+        statusBadge.innerText = `동의 대기 (${consentCount}/${totalMembers})`;
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = `모든 팀원의 동의가 필요합니다 (${consentCount}/${totalMembers} 완료).`;
+      }
+    }
+
+    function toggleDraftConsent(memberId) {
+      state.draftConsents[memberId] = !state.draftConsents[memberId];
+      saveState();
+      renderDraftView();
+    }
+
+    function startProject() {
+      state.stage = 'dashboard';
+      saveState();
+      render();
+    }
+
+    /* =========================================================
+       6. 3~4단계: 모니터링 & 실행 대시보드
+       ========================================================= */
+    function renderDashboardView() {
+      // D-day 계산 (가상 날짜 기준)
+      const dToday = new Date(state.virtualToday + 'T00:00:00');
+      const dTarget = new Date(state.deadline + 'T00:00:00');
+      const diffDays = Math.ceil((dTarget - dToday) / (1000 * 60 * 60 * 24));
+
+      let ddayText = 'D-Day';
+      if (diffDays > 0) ddayText = `D-${diffDays}`;
+      else if (diffDays < 0) ddayText = `D+${Math.abs(diffDays)}`;
+
+      document.getElementById('dash-team-title').innerText = state.teamName || '팀 프로젝트';
+      document.getElementById('dash-dday-val').innerText = ddayText;
+
+      // 전체 완성도 게이지 바 계산
+      let totalStars = 0;
+      let completedStars = 0;
+      state.selectedTasks.forEach(t => {
+        totalStars += t.stars;
+        if (t.completed) completedStars += t.stars;
+      });
+
+      const percentage = totalStars > 0 ? Math.round((completedStars / totalStars) * 100) : 0;
+      document.getElementById('dash-progress-bar').style.width = `${percentage}%`;
+      document.getElementById('dash-progress-text').innerText = `완성도 ${percentage}% (완료 ★${completedStars} / 전체 ★${totalStars})`;
+
+      // 판단 규칙: 100% 완료 시 축하 배너 노출
+      const congratsBanner = document.getElementById('congrats-banner');
+      if (totalStars > 0 && completedStars === totalStars) {
+        congratsBanner.style.display = 'block';
+      } else {
+        congratsBanner.style.display = 'none';
+      }
+
+      // 팀원별 실행 카드 렌더링
+      const membersContainer = document.getElementById('dashboard-members-container');
+      membersContainer.innerHTML = '';
+
+      state.members.filter(m => m.active).forEach(m => {
+        const assigned = state.selectedTasks.filter(t => t.assignedTo === m.id);
+        const mTotalStars = assigned.reduce((sum, t) => sum + t.stars, 0);
+        const mDoneStars = assigned.filter(t => t.completed).reduce((sum, t) => sum + t.stars, 0);
+        const mRemainingCount = assigned.filter(t => !t.completed).length;
+
+        const card = document.createElement('div');
+        card.className = 'member-card';
+        card.innerHTML = `
+          <div class="member-card-header">
+            <div>
+              <span class="member-name">${m.name}</span>
+              <span class="badge" style="background:#f1f5f9; color:#475569; font-size:10px; margin-left:4px;">${m.role}</span>
+            </div>
+            <div class="member-stats">
+              남은 일: <strong>${mRemainingCount}개</strong> (완료 ★${mDoneStars} / ★${mTotalStars})
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            ${assigned.length === 0 ? `<div style="font-size:12px; color:#94a3b8; text-align:center; padding:8px;">배정된 업무가 없습니다.</div>` : ''}
+            ${assigned.map(t => `
+              <div class="task-card ${t.completed ? 'completed' : ''}">
+                <div class="task-top">
+                  <div class="task-title-wrap">
+                    <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTaskComplete('${t.id}')">
+                    <span class="task-title">${t.name}</span>
+                    ${t.bundleId ? `<span class="bundle-badge">묶음</span>` : ''}
+                  </div>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span class="stars">${'★'.repeat(t.stars)}</span>
+                    <button class="btn btn-secondary btn-sm" style="padding: 2px 6px; font-size:11px;" onclick="openWeightModal('${t.id}')">⚖️ 수정</button>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        membersContainer.appendChild(card);
+      });
+    }
+
+    function toggleTaskComplete(taskId) {
+      const task = state.selectedTasks.find(t => t.id === taskId);
+      if (task) {
+        task.completed = !task.completed;
+        saveState();
+        renderDashboardView();
+      }
+    }
+
+    /* =========================================================
+       7. 3단계 가중치 수정 요청 모달 및 실시간 동의 확인
+       ========================================================= */
+    let tempWeightConsents = {};
+
+    function openWeightModal(taskId) {
+      const task = state.selectedTasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      state.editingTaskId = taskId;
+      document.getElementById('modal-task-title-info').innerText = `대상 업무: [${task.name}] (현재 ★${task.stars})`;
+      document.getElementById('modal-new-stars').value = task.stars;
+      document.getElementById('modal-edit-reason').value = '';
+
+      // 동의 체크박스 생성
+      const checkboxesWrap = document.getElementById('modal-consent-checkboxes');
+      checkboxesWrap.innerHTML = '';
+      tempWeightConsents = {};
+
+      state.members.filter(m => m.active).forEach(m => {
+        tempWeightConsents[m.id] = false;
+        const label = document.createElement('label');
+        label.style.display = 'flex';
+        label.style.alignItems = 'center';
+        label.style.gap = '6px';
+        label.style.fontSize = '12px';
+        label.style.fontWeight = 'normal';
+        label.innerHTML = `
+          <input type="checkbox" id="wconsent-${m.id}" onchange="toggleWeightConsent('${m.id}')">
+          <span>${m.name} (${m.role}) 동의</span>
+        `;
+        checkboxesWrap.appendChild(label);
+      });
+
+      updateWeightModalConsentStatus();
+      document.getElementById('modal-weight-edit').style.display = 'flex';
+    }
+
+    function toggleWeightConsent(memberId) {
+      tempWeightConsents[memberId] = !tempWeightConsents[memberId];
+      updateWeightModalConsentStatus();
+    }
+
+    function updateWeightModalConsentStatus() {
+      const activeMembers = state.members.filter(m => m.active);
+      const consentCount = activeMembers.filter(m => tempWeightConsents[m.id]).length;
+      const btn = document.getElementById('btn-confirm-weight-edit');
+      btn.innerText = `동의 완료 & 재분배 (${consentCount}/${activeMembers.length})`;
+      if (consentCount === activeMembers.length && activeMembers.length > 0) {
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-primary');
+      } else {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+      }
+    }
+
+    function confirmWeightEdit() {
+      const task = state.selectedTasks.find(t => t.id === state.editingTaskId);
+      const reason = document.getElementById('modal-edit-reason').value.trim();
+      const newStars = parseInt(document.getElementById('modal-new-stars').value, 10);
+
+      if (!reason) {
+        alert('가중치 변경 사유(이유)를 입력해주세요.');
+        document.getElementById('modal-edit-reason').focus();
+        return;
+      }
+
+      // 판단 규칙: 팀원 전원 동의 확인
+      const activeMembers = state.members.filter(m => m.active);
+      const allConsented = activeMembers.every(m => tempWeightConsents[m.id]);
+
+      if (!allConsented) {
+        alert('가중치 수정을 적용하려면 모든 팀원의 동의 체크가 필요합니다.');
+        return;
+      }
+
+      // 가중치 갱신 및 재분배 실행
+      task.stars = newStars;
+      distributeTasks(true); // 미완료 업무 재분배
+
+      document.getElementById('modal-weight-edit').style.display = 'none';
+      saveState();
+      renderDashboardView();
+      alert(`가중치가 ★${newStars}개로 수정되었으며, 팀원 전원 동의에 따라 미완료 역할이 공정하게 재배분되었습니다!`);
+    }
+
+    /* =========================================================
+       8. 5단계: 재조율 (인원수 변동 & 원터치 1/N 공정 재분배)
+       ========================================================= */
+    function rebalanceAllTasks() {
+      const uncompletedTasks = state.selectedTasks.filter(t => !t.completed);
+      
+      // 판단 규칙: 미완료 업무가 0개이면 알림
+      if (uncompletedTasks.length === 0) {
+        alert('재분배할 남은 업무가 없습니다.');
+        return;
+      }
+
+      if (!confirm('남은 미완료 업무들을 현재 활성 팀원들에게 가중치 1/N로 균등 재배분하시겠습니까?')) {
+        return;
+      }
+
+      distributeTasks(true);
+      saveState();
+      renderDashboardView();
+      alert('남은 업무들이 최적의 균등 상태로 재배분되었습니다!');
+    }
+
+    function openMemberManageModal() {
+      const container = document.getElementById('manage-member-list');
+      container.innerHTML = '';
+
+      state.members.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'member-item';
+        div.style.padding = '6px';
+        div.style.background = m.active ? '#f8fafc' : '#f1f5f9';
+        div.style.borderRadius = '6px';
+        div.innerHTML = `
+          <span style="font-size: 13px; font-weight:700;">${m.name}</span>
+          <span class="badge" style="font-size:10px;">${m.role}</span>
+          <span style="font-size:11px; color:${m.active ? '#10b981':'#ef4444'}; margin-left:auto; margin-right:8px;">
+            ${m.active ? '활동 중' : '하차(이탈)'}
+          </span>
+          <button class="btn btn-sm ${m.active ? 'btn-danger' : 'btn-success'}" style="padding: 2px 8px; font-size:11px;" onclick="toggleMemberActive('${m.id}')">
+            ${m.active ? '하차' : '복귀'}
+          </button>
+        `;
+        container.appendChild(div);
+      });
+
+      document.getElementById('modal-member-manage').style.display = 'flex';
+    }
+
+    function toggleMemberActive(memberId) {
+      const member = state.members.find(m => m.id === memberId);
+      if (!member) return;
+
+      const activeCount = state.members.filter(m => m.active).length;
+      if (member.active && activeCount <= 1) {
+        alert('최소 1명 이상의 활동 팀원이 필요합니다.');
+        return;
+      }
+
+      member.active = !member.active;
+      // 하차한 팀원의 미완료 업무는 재분배 대기 상태로 전환
+      if (!member.active) {
+        state.selectedTasks.forEach(t => {
+          if (t.assignedTo === memberId && !t.completed) {
+            t.assignedTo = null;
+          }
+        });
+      }
+      distributeTasks(true);
+      saveState();
+      openMemberManageModal();
+      renderDashboardView();
+    }
+
+    function addMidMember() {
+      const nameInput = document.getElementById('add-mid-member-name');
+      const roleInput = document.getElementById('add-mid-member-role');
+      const name = nameInput.value.trim();
+
+      if (!name) {
+        alert('신규 팀원 이름을 입력해주세요.');
+        nameInput.focus();
+        return;
+      }
+
+      state.members.push({
+        id: 'm_' + Date.now(),
+        name: name,
+        role: roleInput.value,
+        active: true
+      });
+
+      nameInput.value = '';
+      distributeTasks(true);
+      saveState();
+      openMemberManageModal();
+      renderDashboardView();
+      alert(`신규 팀원 [${name}] 님이 추가되었으며, 남은 업무가 자동 재배분되었습니다!`);
+    }
+
+    /* =========================================================
+       9. 테스트 버튼 핸들러 (AGENTS.md 필수 구현)
+       ========================================================= */
+    function testNextDay() {
+      const cur = new Date(state.virtualToday + 'T00:00:00');
+      cur.setDate(cur.getDate() + 1);
+      const yyyy = cur.getFullYear();
+      const mm = String(cur.getMonth() + 1).padStart(2, '0');
+      const dd = String(cur.getDate()).padStart(2, '0');
+      state.virtualToday = `${yyyy}-${mm}-${dd}`;
+      saveState();
+      render();
+    }
+
+    function testReset() {
+      if (confirm('모든 데이터를 초기화하고 처음부터 다시 시작하시겠습니까?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        state = {
+          virtualToday: '2026-11-17',
+          stage: 'input',
+          teamName: '',
+          deadline: '2026-11-24',
+          members: [
+            { id: 'm1', name: '김철수', role: '자료조사', active: true },
+            { id: 'm2', name: '이영희', role: 'PPT', active: true },
+            { id: 'm3', name: '박민수', role: '발표', active: true }
+          ],
+          selectedTasks: [],
+          bundles: [],
+          bundleCheckQueue: [],
+          draftConsents: {},
+          editingTaskId: null
+        };
+        saveState();
+        render();
+      }
+    }
+
+    /* =========================================================
+       10. 이벤트 리스너 연결
+       ========================================================= */
+    document.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      render();
+
+      // 팀플 이름 및 마감일 실시간 동기화 (입력값 유실 방지)
+      const inputTeamName = document.getElementById('input-team-name');
+      const inputDeadline = document.getElementById('input-deadline');
+      
+      inputTeamName.addEventListener('input', (e) => {
+        state.teamName = e.target.value;
+        saveState();
+      });
+      inputDeadline.addEventListener('change', (e) => {
+        state.deadline = e.target.value;
+        saveState();
+      });
+
+      // 엔터키 지원
+      document.getElementById('new-member-name').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') addMember();
+      });
+      document.getElementById('custom-task-name').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') addCustomTask();
+      });
+      document.getElementById('add-mid-member-name').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') addMidMember();
+      });
+
+      // 1단계 입력 버튼들
+      document.getElementById('btn-add-member').addEventListener('click', addMember);
+      document.getElementById('btn-add-custom-task').addEventListener('click', addCustomTask);
+      document.getElementById('btn-bundle-selected').addEventListener('click', bundleSelectedTasks);
+      document.getElementById('btn-generate-draft').addEventListener('click', generateDraft);
+
+      // 2단계 초안 버튼들
+      document.getElementById('btn-back-to-input').addEventListener('click', () => {
+        state.stage = 'input';
+        saveState();
+        render();
+      });
+      document.getElementById('btn-start-project').addEventListener('click', startProject);
+
+      // 3~5단계 대시보드 버튼들
+      document.getElementById('btn-rebalance-all').addEventListener('click', rebalanceAllTasks);
+      document.getElementById('btn-open-member-manage').addEventListener('click', openMemberManageModal);
+      document.getElementById('btn-close-member-manage').addEventListener('click', () => {
+        document.getElementById('modal-member-manage').style.display = 'none';
+      });
+      document.getElementById('btn-confirm-mid-add').addEventListener('click', addMidMember);
+
+      // 가중치 수정 모달 버튼들
+      document.getElementById('btn-close-weight-modal').addEventListener('click', () => {
+        document.getElementById('modal-weight-edit').style.display = 'none';
+      });
+      document.getElementById('btn-confirm-weight-edit').addEventListener('click', confirmWeightEdit);
+
+      // 고정 테스트 바 버튼들
+      document.getElementById('btn-test-next-day').addEventListener('click', testNextDay);
+      document.getElementById('btn-test-reset').addEventListener('click', testReset);
+    });
+  </script>
+</body>
+</html>
